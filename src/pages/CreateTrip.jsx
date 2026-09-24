@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { createTrip } from "../services/tripApi";
 
 function CreateTrip() {
-
   const navigate = useNavigate();
 
   const [trip, setTrip] = useState({
@@ -14,21 +14,19 @@ function CreateTrip() {
     description: "",
   });
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
 
   const handleChange = (event) => {
-
     const { name, value } = event.target;
 
     setTrip({
       ...trip,
       [name]: value,
     });
-
   };
 
-
-  const handleSubmit = (event) => {
-
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
     if (
@@ -37,99 +35,74 @@ function CreateTrip() {
       !trip.startDate ||
       !trip.endDate
     ) {
-      alert("Please fill all required fields.");
+      setError("Please fill all required fields.");
       return;
     }
 
+    if (trip.endDate < trip.startDate) {
+      setError("End date cannot be before start date.");
+      return;
+    }
 
-    const existingTrips =
-      JSON.parse(localStorage.getItem("trips")) || [];
+    setIsSubmitting(true);
+    setError("");
 
+    try {
+      const tripData = {
+        tripName: trip.tripName,
+        destination: trip.destination,
+        startDate: trip.startDate,
+        endDate: trip.endDate,
+        budget: trip.budget
+          ? Number(trip.budget)
+          : null,
+        description: trip.description,
+      };
 
-    const newTrip = {
-      id: Date.now(),
-      ...trip,
-      status: "Upcoming",
-      createdAt: new Date().toISOString(),
-    };
+      await createTrip(tripData);
 
+      alert("Trip created successfully! ✈️");
 
-    const updatedTrips = [
-      ...existingTrips,
-      newTrip,
-    ];
+      navigate("/trips");
+    } catch (error) {
+      console.error("Create trip error:", error);
 
-
-    localStorage.setItem(
-      "trips",
-      JSON.stringify(updatedTrips)
-    );
-
-
-    alert("Trip created successfully! ✈️");
-
-    navigate("/trips");
-
+      setError(
+        "Unable to create trip. Please make sure the backend is running."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-
   return (
-
     <main className="create-page">
-
-
-      {/* Header */}
-
       <div className="create-header">
+        <span>NEW ADVENTURE</span>
 
-        <span>
-          NEW ADVENTURE
-        </span>
-
-        <h1>
-          Create your trip
-        </h1>
+        <h1>Create your trip</h1>
 
         <p>
           Every great journey starts with a plan.
         </p>
-
       </div>
-
-
-
-      {/* Form */}
 
       <form
         className="trip-form"
         onSubmit={handleSubmit}
       >
-
-
         <div className="form-section">
-
-          <h2>
-            ✈️ Trip details
-          </h2>
+          <h2>✈️ Trip details</h2>
 
           <p>
             Tell us about your next adventure.
           </p>
-
         </div>
-
-
 
         <div className="form-grid">
 
-
-          {/* Trip Name */}
-
           <div className="form-group">
-
-            <label>
-              Trip name *
-            </label>
+            <label>Trip name *</label>
 
             <input
               type="text"
@@ -138,18 +111,10 @@ function CreateTrip() {
               value={trip.tripName}
               onChange={handleChange}
             />
-
           </div>
 
-
-
-          {/* Destination */}
-
           <div className="form-group">
-
-            <label>
-              Destination *
-            </label>
+            <label>Destination *</label>
 
             <input
               type="text"
@@ -158,18 +123,10 @@ function CreateTrip() {
               value={trip.destination}
               onChange={handleChange}
             />
-
           </div>
 
-
-
-          {/* Start Date */}
-
           <div className="form-group">
-
-            <label>
-              Start date *
-            </label>
+            <label>Start date *</label>
 
             <input
               type="date"
@@ -177,18 +134,10 @@ function CreateTrip() {
               value={trip.startDate}
               onChange={handleChange}
             />
-
           </div>
 
-
-
-          {/* End Date */}
-
           <div className="form-group">
-
-            <label>
-              End date *
-            </label>
+            <label>End date *</label>
 
             <input
               type="date"
@@ -196,18 +145,10 @@ function CreateTrip() {
               value={trip.endDate}
               onChange={handleChange}
             />
-
           </div>
 
-
-
-          {/* Budget */}
-
           <div className="form-group">
-
-            <label>
-              Budget
-            </label>
+            <label>Budget</label>
 
             <input
               type="number"
@@ -216,18 +157,10 @@ function CreateTrip() {
               value={trip.budget}
               onChange={handleChange}
             />
-
           </div>
 
-
-
-          {/* Description */}
-
           <div className="form-group full">
-
-            <label>
-              Trip description
-            </label>
+            <label>Trip description</label>
 
             <textarea
               name="description"
@@ -236,14 +169,15 @@ function CreateTrip() {
               value={trip.description}
               onChange={handleChange}
             />
-
           </div>
 
         </div>
 
-
-
-        {/* Buttons */}
+        {error && (
+          <p className="form-error">
+            {error}
+          </p>
+        )}
 
         <div className="form-actions">
 
@@ -251,24 +185,24 @@ function CreateTrip() {
             type="button"
             className="secondary-button"
             onClick={() => navigate("/trips")}
+            disabled={isSubmitting}
           >
             Cancel
           </button>
 
-
           <button
             type="submit"
             className="primary-button"
+            disabled={isSubmitting}
           >
-            Create Trip →
+            {isSubmitting
+              ? "Creating..."
+              : "Create Trip →"}
           </button>
 
         </div>
-
       </form>
-
     </main>
-
   );
 }
 

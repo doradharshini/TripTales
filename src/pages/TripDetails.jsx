@@ -1,76 +1,217 @@
-import { useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { Link, useParams } from "react-router-dom";
+
+import {
+  getTripById,
+  getItineraryItems,
+  createItineraryItem,
+} from "../services/tripApi";
 
 function TripDetails() {
   const { id } = useParams();
-  const navigate = useNavigate();
 
-  const trips =
-    JSON.parse(localStorage.getItem("trips")) || [];
-
-  const trip = trips.find(
-    (item) => String(item.id) === String(id)
-  );
+  const [trip, setTrip] = useState(null);
+  const [itinerary, setItinerary] = useState([]);
 
   const [activeTab, setActiveTab] = useState("overview");
 
-  const [itinerary, setItinerary] = useState([
-    {
-      id: 1,
-      day: "Day 1",
-      title: "Arrival & Explore",
-      description:
-        "Arrive at the destination and explore nearby places.",
-      time: "10:00 AM",
-    },
-    {
-      id: 2,
-      day: "Day 2",
-      title: "Local Sightseeing",
-      description:
-        "Visit the major attractions and enjoy local food.",
-      time: "9:00 AM",
-    },
-  ]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isItineraryLoading, setIsItineraryLoading] =
+    useState(false);
 
-  const [expenses, setExpenses] = useState([
-    {
-      id: 1,
-      category: "Travel",
-      description: "Bus / Train",
-      amount: 1500,
-    },
-    {
-      id: 2,
-      category: "Stay",
-      description: "Hotel",
-      amount: 2500,
-    },
-    {
-      id: 3,
-      category: "Food",
-      description: "Meals",
-      amount: 800,
-    },
-  ]);
+  const [error, setError] = useState("");
+  const [itineraryError, setItineraryError] =
+    useState("");
 
-  const [newExpense, setNewExpense] = useState({
-    category: "Food",
+  const [showActivityModal, setShowActivityModal] =
+    useState(false);
+
+  const [isSavingActivity, setIsSavingActivity] =
+    useState(false);
+
+  const [activityForm, setActivityForm] = useState({
+    dayNumber: 1,
+    title: "",
+    location: "",
+    startTime: "",
+    endTime: "",
     description: "",
-    amount: "",
   });
 
-  if (!trip) {
+  useEffect(() => {
+    const loadTrip = async () => {
+      try {
+        setIsLoading(true);
+        setError("");
+
+        const tripData = await getTripById(id);
+
+        setTrip(tripData);
+      } catch (error) {
+        console.error("Failed to load trip:", error);
+
+        setError(
+          "Unable to load this trip. Please try again."
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadTrip();
+  }, [id]);
+
+  useEffect(() => {
+    if (!id) {
+      return;
+    }
+
+    const loadItinerary = async () => {
+      try {
+        setIsItineraryLoading(true);
+        setItineraryError("");
+
+        const data = await getItineraryItems(id);
+
+        setItinerary(data);
+      } catch (error) {
+        console.error(
+          "Failed to load itinerary:",
+          error
+        );
+
+        setItineraryError(
+          "Unable to load itinerary."
+        );
+      } finally {
+        setIsItineraryLoading(false);
+      }
+    };
+
+    loadItinerary();
+  }, [id]);
+
+  const groupedItinerary = useMemo(() => {
+    return itinerary.reduce((groups, item) => {
+      const day = item.dayNumber;
+
+      if (!groups[day]) {
+        groups[day] = [];
+      }
+
+      groups[day].push(item);
+
+      return groups;
+    }, {});
+  }, [itinerary]);
+
+  const handleActivityChange = (event) => {
+    const { name, value } = event.target;
+
+    setActivityForm({
+      ...activityForm,
+      [name]: value,
+    });
+  };
+
+  const openActivityModal = () => {
+    setActivityForm({
+      dayNumber: 1,
+      title: "",
+      location: "",
+      startTime: "",
+      endTime: "",
+      description: "",
+    });
+
+    setShowActivityModal(true);
+  };
+
+  const closeActivityModal = () => {
+    if (isSavingActivity) {
+      return;
+    }
+
+    setShowActivityModal(false);
+  };
+
+  const handleActivitySubmit = async (event) => {
+    event.preventDefault();
+
+    if (!activityForm.title.trim()) {
+      return;
+    }
+
+    try {
+      setIsSavingActivity(true);
+
+      const newActivity = {
+        dayNumber: Number(activityForm.dayNumber),
+        title: activityForm.title.trim(),
+        location: activityForm.location.trim(),
+        startTime: activityForm.startTime,
+        endTime: activityForm.endTime,
+        description: activityForm.description.trim(),
+      };
+
+      const savedActivity =
+        await createItineraryItem(
+          id,
+          newActivity
+        );
+
+      setItinerary((current) => [
+        ...current,
+        savedActivity,
+      ]);
+
+      setShowActivityModal(false);
+
+      setActivityForm({
+        dayNumber: 1,
+        title: "",
+        location: "",
+        startTime: "",
+        endTime: "",
+        description: "",
+      });
+    } catch (error) {
+      console.error(
+        "Failed to create activity:",
+        error
+      );
+
+      setItineraryError(
+        "Unable to save activity. Please try again."
+      );
+    } finally {
+      setIsSavingActivity(false);
+    }
+  };
+
+  if (isLoading) {
     return (
-      <main className="page-container">
-        <div className="empty-trips">
-          <div>😕</div>
-
-          <h2>Trip not found</h2>
-
+      <main className="trip-details-page">
+        <div className="page-state">
+          <div className="state-icon">✈️</div>
+          <h2>Loading your trip...</h2>
           <p>
-            We couldn't find the trip you're looking for.
+            We're getting your adventure ready.
           </p>
+        </div>
+      </main>
+    );
+  }
+
+  if (error || !trip) {
+    return (
+      <main className="trip-details-page">
+        <div className="page-state">
+          <div className="state-icon">⚠️</div>
+
+          <h2>
+            {error || "Trip not found"}
+          </h2>
 
           <Link
             to="/trips"
@@ -83,573 +224,632 @@ function TripDetails() {
     );
   }
 
-  const totalExpenses = expenses.reduce(
-    (total, expense) =>
-      total + Number(expense.amount || 0),
-    0
-  );
-
-  const remainingBudget =
-    Number(trip.budget || 0) - totalExpenses;
-
-  const addExpense = (event) => {
-    event.preventDefault();
-
-    if (
-      !newExpense.description ||
-      !newExpense.amount
-    ) {
-      alert("Please enter expense details.");
-      return;
-    }
-
-    const expense = {
-      id: Date.now(),
-      category: newExpense.category,
-      description: newExpense.description,
-      amount: Number(newExpense.amount),
-    };
-
-    setExpenses([
-      ...expenses,
-      expense,
-    ]);
-
-    setNewExpense({
-      category: "Food",
-      description: "",
-      amount: "",
-    });
-  };
-
-  const deleteExpense = (expenseId) => {
-    setExpenses(
-      expenses.filter(
-        (expense) => expense.id !== expenseId
-      )
-    );
-  };
-
-  const addItineraryItem = () => {
-    const newItem = {
-      id: Date.now(),
-      day: `Day ${itinerary.length + 1}`,
-      title: "New Activity",
-      description:
-        "Add your activity details here.",
-      time: "10:00 AM",
-    };
-
-    setItinerary([
-      ...itinerary,
-      newItem,
-    ]);
-  };
-
   return (
     <main className="trip-details-page">
 
-      {/* BACK BUTTON */}
-
-      <div className="trip-back">
-        <button
-          onClick={() => navigate("/trips")}
-        >
-          ← Back to My Trips
-        </button>
-      </div>
-
-
       {/* HERO */}
 
-      <section className="trip-details-hero">
+      <section className="trip-hero">
 
         <div className="trip-hero-content">
 
-          <span className="trip-status">
-            ✈️ {trip.status}
-          </span>
+          <Link
+            to="/trips"
+            className="trip-back-link"
+          >
+            ← Back to My Trips
+          </Link>
 
-          <h1>{trip.tripName}</h1>
-
-          <p className="trip-destination">
-            📍 {trip.destination}
-          </p>
-
-          <p className="trip-description">
-            {trip.description ||
-              "Your travel story begins here."}
-          </p>
-
-          <div className="trip-meta">
+          <div className="trip-hero-main">
 
             <div>
-              <span>📅</span>
-              <div>
-                <small>DATES</small>
-                <strong>
-                  {trip.startDate}
+              <span className="trip-status-badge">
+                {trip.status}
+              </span>
+
+              <h1>{trip.tripName}</h1>
+
+              <div className="trip-hero-meta">
+                <span>
+                  📍 {trip.destination}
+                </span>
+
+                <span>
+                  📅 {trip.startDate}
                   {" → "}
                   {trip.endDate}
-                </strong>
-              </div>
-            </div>
-
-            <div>
-              <span>💰</span>
-              <div>
-                <small>BUDGET</small>
-                <strong>
-                  ₹{Number(trip.budget || 0).toLocaleString()}
-                </strong>
-              </div>
-            </div>
-
-            <div>
-              <span>📍</span>
-              <div>
-                <small>DESTINATION</small>
-                <strong>{trip.destination}</strong>
+                </span>
               </div>
             </div>
 
           </div>
 
-        </div>
-
-        <div className="trip-hero-art">
-          🏔️
         </div>
 
       </section>
 
 
-      {/* TABS */}
+      {/* CONTENT */}
 
-      <div className="trip-tabs">
+      <section className="trip-details-container">
 
-        <button
-          className={
-            activeTab === "overview"
-              ? "active"
-              : ""
-          }
-          onClick={() =>
-            setActiveTab("overview")
-          }
-        >
-          🏠 Overview
-        </button>
+        {/* SUMMARY CARDS */}
 
-        <button
-          className={
-            activeTab === "itinerary"
-              ? "active"
-              : ""
-          }
-          onClick={() =>
-            setActiveTab("itinerary")
-          }
-        >
-          🗺️ Itinerary
-        </button>
+        <div className="trip-summary-grid">
 
-        <button
-          className={
-            activeTab === "expenses"
-              ? "active"
-              : ""
-          }
-          onClick={() =>
-            setActiveTab("expenses")
-          }
-        >
-          💰 Expenses
-        </button>
-
-      </div>
-
-
-      {/* OVERVIEW */}
-
-      {activeTab === "overview" && (
-
-        <section className="trip-tab-content">
-
-          <div className="overview-grid">
-
-            <div className="overview-card">
-
-              <span>🗺️</span>
-
-              <div>
-                <strong>
-                  {itinerary.length}
-                </strong>
-
-                <p>
-                  Planned activities
-                </p>
-              </div>
-
+          <div className="trip-summary-card">
+            <div className="summary-icon location">
+              📍
             </div>
-
-
-            <div className="overview-card">
-
-              <span>💰</span>
-
-              <div>
-                <strong>
-                  ₹{totalExpenses.toLocaleString()}
-                </strong>
-
-                <p>
-                  Total spent
-                </p>
-              </div>
-
-            </div>
-
-
-            <div className="overview-card">
-
-              <span>💵</span>
-
-              <div>
-                <strong>
-                  ₹
-                  {Math.max(
-                    remainingBudget,
-                    0
-                  ).toLocaleString()}
-                </strong>
-
-                <p>
-                  Budget remaining
-                </p>
-
-              </div>
-
-            </div>
-
-
-            <div className="overview-card">
-
-              <span>📸</span>
-
-              <div>
-
-                <strong>
-                  0
-                </strong>
-
-                <p>
-                  Memories
-                </p>
-
-              </div>
-
-            </div>
-
-          </div>
-
-
-          <div className="trip-overview-section">
 
             <div>
-              <span>YOUR JOURNEY</span>
-
-              <h2>
-                {trip.destination}
-                {" "}
-                awaits ✨
-              </h2>
-
-              <p>
-                Your trip is ready to become
-                a beautiful travel story.
-                Start adding places,
-                activities, expenses and
-                memories as you travel.
-              </p>
-
+              <span>Destination</span>
+              <strong>{trip.destination}</strong>
             </div>
-
-            <div className="overview-illustration">
-              🌴
-            </div>
-
           </div>
 
-        </section>
-
-      )}
-
-
-      {/* ITINERARY */}
-
-      {activeTab === "itinerary" && (
-
-        <section className="trip-tab-content">
-
-          <div className="tab-header">
+          <div className="trip-summary-card">
+            <div className="summary-icon calendar">
+              📅
+            </div>
 
             <div>
-              <span>YOUR PLAN</span>
+              <span>Start date</span>
+              <strong>{trip.startDate}</strong>
+            </div>
+          </div>
 
-              <h2>
-                Trip itinerary
-              </h2>
-
-              <p>
-                Plan every important moment
-                of your journey.
-              </p>
+          <div className="trip-summary-card">
+            <div className="summary-icon money">
+              💰
             </div>
 
-            <button
-              className="primary-button"
-              onClick={addItineraryItem}
-            >
-              + Add Activity
-            </button>
-
-          </div>
-
-
-          <div className="itinerary-list">
-
-            {itinerary.map((item) => (
-
-              <article
-                className="itinerary-card"
-                key={item.id}
-              >
-
-                <div className="day-badge">
-                  {item.day}
-                </div>
-
-                <div className="itinerary-time">
-                  🕐 {item.time}
-                </div>
-
-                <div className="itinerary-content">
-
-                  <h3>
-                    {item.title}
-                  </h3>
-
-                  <p>
-                    {item.description}
-                  </p>
-
-                </div>
-
-                <button className="icon-button">
-                  ⋮
-                </button>
-
-              </article>
-
-            ))}
-
-          </div>
-
-        </section>
-
-      )}
-
-
-      {/* EXPENSES */}
-
-      {activeTab === "expenses" && (
-
-        <section className="trip-tab-content">
-
-          <div className="tab-header">
-
             <div>
-              <span>TRAVEL BUDGET</span>
-
-              <h2>
-                Expenses
-              </h2>
-
-              <p>
-                Keep track of every rupee
-                spent during your trip.
-              </p>
-            </div>
-
-          </div>
-
-
-          {/* EXPENSE SUMMARY */}
-
-          <div className="expense-summary">
-
-            <div>
-              <span>Total budget</span>
-
+              <span>Budget</span>
               <strong>
-                ₹
-                {Number(
-                  trip.budget || 0
-                ).toLocaleString()}
+                ₹{trip.budget || "0"}
               </strong>
             </div>
-
-            <div>
-              <span>Total spent</span>
-
-              <strong>
-                ₹
-                {totalExpenses.toLocaleString()}
-              </strong>
-            </div>
-
-            <div>
-              <span>Remaining</span>
-
-              <strong>
-                ₹
-                {Math.max(
-                  remainingBudget,
-                  0
-                ).toLocaleString()}
-              </strong>
-            </div>
-
           </div>
 
+          <div className="trip-summary-card">
+            <div className="summary-icon status">
+              🧳
+            </div>
 
-          {/* ADD EXPENSE */}
+            <div>
+              <span>Status</span>
+              <strong>{trip.status}</strong>
+            </div>
+          </div>
 
-          <form
-            className="expense-form"
-            onSubmit={addExpense}
+        </div>
+
+
+        {/* TABS */}
+
+        <div className="trip-tabs">
+
+          <button
+            className={
+              activeTab === "overview"
+                ? "active"
+                : ""
+            }
+            onClick={() =>
+              setActiveTab("overview")
+            }
           >
+            <span>📋</span>
+            Overview
+          </button>
 
-            <select
-              value={newExpense.category}
-              onChange={(event) =>
-                setNewExpense({
-                  ...newExpense,
-                  category:
-                    event.target.value,
-                })
-              }
-            >
-              <option>Food</option>
-              <option>Travel</option>
-              <option>Stay</option>
-              <option>Shopping</option>
-              <option>Activities</option>
-              <option>Other</option>
-            </select>
+          <button
+            className={
+              activeTab === "itinerary"
+                ? "active"
+                : ""
+            }
+            onClick={() =>
+              setActiveTab("itinerary")
+            }
+          >
+            <span>🗺️</span>
+            Itinerary
 
+            {itinerary.length > 0 && (
+              <em>{itinerary.length}</em>
+            )}
+          </button>
 
-            <input
-              type="text"
-              placeholder="Expense description"
-              value={newExpense.description}
-              onChange={(event) =>
-                setNewExpense({
-                  ...newExpense,
-                  description:
-                    event.target.value,
-                })
-              }
-            />
+          <button
+            className={
+              activeTab === "expenses"
+                ? "active"
+                : ""
+            }
+            onClick={() =>
+              setActiveTab("expenses")
+            }
+          >
+            <span>💰</span>
+            Expenses
+          </button>
 
-
-            <input
-              type="number"
-              placeholder="Amount"
-              value={newExpense.amount}
-              onChange={(event) =>
-                setNewExpense({
-                  ...newExpense,
-                  amount:
-                    event.target.value,
-                })
-              }
-            />
+        </div>
 
 
-            <button
-              type="submit"
-              className="primary-button"
-            >
-              + Add
-            </button>
+        {/* OVERVIEW */}
 
-          </form>
+        {activeTab === "overview" && (
+          <section className="trip-panel">
 
+            <div className="panel-heading">
+              <div>
+                <span className="panel-label">
+                  YOUR JOURNEY
+                </span>
 
-          {/* EXPENSE LIST */}
+                <h2>About this trip</h2>
 
-          <div className="expense-list">
+                <p>
+                  Everything you need to know
+                  about this adventure.
+                </p>
+              </div>
+            </div>
 
-            {expenses.map((expense) => (
+            <div className="trip-description">
 
-              <div
-                className="expense-row"
-                key={expense.id}
-              >
+              <div className="description-icon">
+                ✨
+              </div>
 
-                <div className="expense-category">
-                  {expense.category === "Food" && "🍴"}
-                  {expense.category === "Travel" && "🚆"}
-                  {expense.category === "Stay" && "🏨"}
-                  {expense.category === "Shopping" && "🛍️"}
-                  {expense.category === "Activities" && "🎯"}
-                  {expense.category === "Other" && "💳"}
-                </div>
+              <div>
+                <h3>Trip story</h3>
 
+                <p>
+                  {trip.description ||
+                    "You haven't added a description for this trip yet."}
+                </p>
+              </div>
 
-                <div className="expense-info">
+            </div>
 
-                  <strong>
-                    {expense.description}
-                  </strong>
+            <div className="trip-info-grid">
 
-                  <span>
-                    {expense.category}
-                  </span>
+              <div>
+                <span>Trip name</span>
+                <strong>{trip.tripName}</strong>
+              </div>
 
-                </div>
+              <div>
+                <span>Destination</span>
+                <strong>{trip.destination}</strong>
+              </div>
 
+              <div>
+                <span>Start date</span>
+                <strong>{trip.startDate}</strong>
+              </div>
 
-                <strong className="expense-amount">
-                  ₹
-                  {Number(
-                    expense.amount
-                  ).toLocaleString()}
+              <div>
+                <span>End date</span>
+                <strong>{trip.endDate}</strong>
+              </div>
+
+              <div>
+                <span>Budget</span>
+                <strong>
+                  ₹{trip.budget || "0"}
                 </strong>
+              </div>
 
+              <div>
+                <span>Created</span>
+                <strong>
+                  {trip.createdAt
+                    ? new Date(
+                        trip.createdAt
+                      ).toLocaleDateString()
+                    : "-"}
+                </strong>
+              </div>
+
+            </div>
+
+          </section>
+        )}
+
+
+        {/* ITINERARY */}
+
+        {activeTab === "itinerary" && (
+          <section className="trip-panel">
+
+            <div className="panel-heading itinerary-heading">
+
+              <div>
+                <span className="panel-label">
+                  PLAN YOUR JOURNEY
+                </span>
+
+                <h2>Itinerary</h2>
+
+                <p>
+                  Build your trip day by day.
+                </p>
+              </div>
+
+              <button
+                className="primary-button"
+                onClick={openActivityModal}
+              >
+                + Add Activity
+              </button>
+
+            </div>
+
+            {itineraryError && (
+              <div className="inline-error">
+                ⚠️ {itineraryError}
+              </div>
+            )}
+
+            {isItineraryLoading ? (
+              <div className="empty-itinerary">
+                <div>⏳</div>
+
+                <h3>
+                  Loading itinerary...
+                </h3>
+
+                <p>
+                  Getting your planned activities.
+                </p>
+              </div>
+            ) : itinerary.length === 0 ? (
+              <div className="empty-itinerary">
+
+                <div className="empty-itinerary-icon">
+                  🗺️
+                </div>
+
+                <h3>
+                  Your itinerary is empty
+                </h3>
+
+                <p>
+                  Start planning your adventure
+                  by adding your first activity.
+                </p>
 
                 <button
-                  className="delete-expense"
-                  onClick={() =>
-                    deleteExpense(
-                      expense.id
-                    )
-                  }
+                  className="primary-button"
+                  onClick={openActivityModal}
                 >
-                  🗑️
+                  + Add Your First Activity
+                </button>
+
+              </div>
+            ) : (
+              <div className="itinerary-list">
+
+                {Object.entries(
+                  groupedItinerary
+                )
+                  .sort(
+                    ([dayA], [dayB]) =>
+                      Number(dayA) -
+                      Number(dayB)
+                  )
+                  .map(
+                    ([day, activities]) => (
+                      <div
+                        className="itinerary-day"
+                        key={day}
+                      >
+
+                        <div className="day-header">
+                          <div className="day-number">
+                            {day}
+                          </div>
+
+                          <div>
+                            <span>
+                              DAY {day}
+                            </span>
+
+                            <h3>
+                              Your adventure
+                            </h3>
+                          </div>
+                        </div>
+
+                        <div className="activity-list">
+
+                          {activities
+                            .sort(
+                              (a, b) =>
+                                (
+                                  a.startTime ||
+                                  ""
+                                ).localeCompare(
+                                  b.startTime ||
+                                    ""
+                                )
+                            )
+                            .map(
+                              (activity) => (
+                                <article
+                                  className="activity-card"
+                                  key={
+                                    activity.id
+                                  }
+                                >
+
+                                  <div className="activity-time">
+
+                                    <strong>
+                                      {activity.startTime ||
+                                        "--:--"}
+                                    </strong>
+
+                                    {activity.endTime && (
+                                      <span>
+                                        to{" "}
+                                        {
+                                          activity.endTime
+                                        }
+                                      </span>
+                                    )}
+
+                                  </div>
+
+                                  <div className="activity-line">
+                                    <div className="activity-dot" />
+                                  </div>
+
+                                  <div className="activity-content">
+
+                                    <h3>
+                                      {
+                                        activity.title
+                                      }
+                                    </h3>
+
+                                    {activity.location && (
+                                      <span className="activity-location">
+                                        📍{" "}
+                                        {
+                                          activity.location
+                                        }
+                                      </span>
+                                    )}
+
+                                    {activity.description && (
+                                      <p>
+                                        {
+                                          activity.description
+                                        }
+                                      </p>
+                                    )}
+
+                                  </div>
+
+                                </article>
+                              )
+                            )}
+
+                        </div>
+
+                      </div>
+                    )
+                  )}
+
+              </div>
+            )}
+
+          </section>
+        )}
+
+
+        {/* EXPENSES */}
+
+        {activeTab === "expenses" && (
+          <section className="trip-panel">
+
+            <div className="panel-heading itinerary-heading">
+
+              <div>
+                <span className="panel-label">
+                  TRACK YOUR SPENDING
+                </span>
+
+                <h2>Expenses</h2>
+
+                <p>
+                  Keep your travel budget organized.
+                </p>
+              </div>
+
+              <button className="primary-button">
+                + Add Expense
+              </button>
+
+            </div>
+
+            <div className="empty-itinerary">
+
+              <div className="empty-itinerary-icon">
+                💰
+              </div>
+
+              <h3>
+                No expenses yet
+              </h3>
+
+              <p>
+                Your travel expenses will
+                appear here.
+              </p>
+
+            </div>
+
+          </section>
+        )}
+
+      </section>
+
+
+      {/* ADD ACTIVITY MODAL */}
+
+      {showActivityModal && (
+        <div
+          className="modal-backdrop"
+          onMouseDown={closeActivityModal}
+        >
+
+          <div
+            className="activity-modal"
+            onMouseDown={(event) =>
+              event.stopPropagation()
+            }
+          >
+
+            <div className="modal-header">
+
+              <div>
+                <span className="panel-label">
+                  NEW ACTIVITY
+                </span>
+
+                <h2>Add to itinerary</h2>
+
+                <p>
+                  Add something memorable to your trip.
+                </p>
+              </div>
+
+              <button
+                className="modal-close"
+                onClick={closeActivityModal}
+                type="button"
+              >
+                ×
+              </button>
+
+            </div>
+
+            <form
+              className="activity-form"
+              onSubmit={handleActivitySubmit}
+            >
+
+              <div className="activity-form-grid">
+
+                <div className="form-group">
+                  <label>Day *</label>
+
+                  <input
+                    type="number"
+                    name="dayNumber"
+                    min="1"
+                    value={activityForm.dayNumber}
+                    onChange={handleActivityChange}
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Activity *</label>
+
+                  <input
+                    type="text"
+                    name="title"
+                    placeholder="Visit Ooty Lake"
+                    value={activityForm.title}
+                    onChange={handleActivityChange}
+                    required
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Location</label>
+
+                  <input
+                    type="text"
+                    name="location"
+                    placeholder="Ooty Lake"
+                    value={activityForm.location}
+                    onChange={handleActivityChange}
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>Start time</label>
+
+                  <input
+                    type="time"
+                    name="startTime"
+                    value={activityForm.startTime}
+                    onChange={handleActivityChange}
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label>End time</label>
+
+                  <input
+                    type="time"
+                    name="endTime"
+                    value={activityForm.endTime}
+                    onChange={handleActivityChange}
+                  />
+                </div>
+
+                <div className="form-group full">
+                  <label>Description</label>
+
+                  <textarea
+                    name="description"
+                    rows="4"
+                    placeholder="What do you want to do here?"
+                    value={activityForm.description}
+                    onChange={handleActivityChange}
+                  />
+                </div>
+
+              </div>
+
+              <div className="modal-actions">
+
+                <button
+                  type="button"
+                  className="secondary-button"
+                  onClick={closeActivityModal}
+                  disabled={isSavingActivity}
+                >
+                  Cancel
+                </button>
+
+                <button
+                  type="submit"
+                  className="primary-button"
+                  disabled={isSavingActivity}
+                >
+                  {isSavingActivity
+                    ? "Saving..."
+                    : "Add Activity →"}
                 </button>
 
               </div>
 
-            ))}
+            </form>
 
           </div>
 
-        </section>
-
+        </div>
       )}
 
     </main>
