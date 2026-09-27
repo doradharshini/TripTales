@@ -1,29 +1,15 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import {
+  createMemory,
+  deleteMemory,
+  getMemories,
+} from "../services/tripApi";
 
 function MemoryGram() {
-  const [memories, setMemories] = useState([
-    {
-      id: 1,
-      image:
-        "https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=900&q=80",
-      title: "A beautiful beginning",
-      location: "Ooty",
-      date: "2026-10-12",
-      description:
-        "The first morning of our Ooty adventure. Fresh air, mountains and a perfect start.",
-    },
-    {
-      id: 2,
-      image:
-        "https://images.unsplash.com/photo-1470770841072-f978cf4d019e?auto=format&fit=crop&w=900&q=80",
-      title: "Mountain escape",
-      location: "Ooty",
-      date: "2026-10-13",
-      description:
-        "Exploring the hills and enjoying the peaceful views.",
-    },
-  ]);
+  const [memories, setMemories] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
 
   const [showForm, setShowForm] = useState(false);
 
@@ -34,6 +20,22 @@ function MemoryGram() {
     date: "",
     description: "",
   });
+
+  useEffect(() => {
+    const loadMemories = async () => {
+      try {
+        setError("");
+        setMemories(await getMemories());
+      } catch (loadError) {
+        console.error("Failed to load memories:", loadError);
+        setError("Unable to load memories. Please start the backend.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadMemories();
+  }, []);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -51,15 +53,17 @@ function MemoryGram() {
       return;
     }
 
-    const imageUrl = URL.createObjectURL(file);
-
-    setNewMemory({
-      ...newMemory,
-      image: imageUrl,
-    });
+    const reader = new FileReader();
+    reader.onload = () => {
+      setNewMemory((currentMemory) => ({
+        ...currentMemory,
+        image: reader.result,
+      }));
+    };
+    reader.readAsDataURL(file);
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
     if (
@@ -75,33 +79,34 @@ function MemoryGram() {
       return;
     }
 
-    const memory = {
-      id: Date.now(),
-      ...newMemory,
-    };
-
-    setMemories([
-      memory,
-      ...memories,
-    ]);
-
-    setNewMemory({
-      image: "",
-      title: "",
-      location: "",
-      date: "",
-      description: "",
-    });
-
-    setShowForm(false);
+    try {
+      const savedMemory = await createMemory(newMemory);
+      setMemories((currentMemories) => [savedMemory, ...currentMemories]);
+      setNewMemory({
+        image: "",
+        title: "",
+        location: "",
+        date: "",
+        description: "",
+      });
+      setShowForm(false);
+      setError("");
+    } catch (saveError) {
+      console.error("Failed to save memory:", saveError);
+      setError("Unable to save this memory. Please try again.");
+    }
   };
 
-  const deleteMemory = (memoryId) => {
-    setMemories(
-      memories.filter(
-        (memory) => memory.id !== memoryId
-      )
-    );
+  const handleDeleteMemory = async (memoryId) => {
+    try {
+      await deleteMemory(memoryId);
+      setMemories((currentMemories) =>
+        currentMemories.filter((memory) => memory.id !== memoryId)
+      );
+    } catch (deleteError) {
+      console.error("Failed to delete memory:", deleteError);
+      setError("Unable to delete this memory. Please try again.");
+    }
   };
 
   return (
@@ -318,6 +323,10 @@ function MemoryGram() {
 
       <section className="memory-stats">
 
+        {isLoading && <p>Loading memories...</p>}
+
+        {error && <p className="form-error">{error}</p>}
+
         <div className="memory-stat">
 
           <span>📸</span>
@@ -453,9 +462,7 @@ function MemoryGram() {
 
                   <button
                     className="delete-memory"
-                    onClick={() =>
-                      deleteMemory(memory.id)
-                    }
+                    onClick={() => handleDeleteMemory(memory.id)}
                   >
                     🗑️
                   </button>

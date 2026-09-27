@@ -1,27 +1,15 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import {
+  createJournalEntry,
+  deleteJournalEntry,
+  getJournalEntries,
+} from "../services/tripApi";
 
 function Journal() {
 
-  const [entries, setEntries] = useState([
-    {
-      id: 1,
-      title: "A Peaceful Morning",
-      date: "2026-10-13",
-      location: "Ooty",
-      mood: "😊 Happy",
-      description:
-        "Woke up early and went for a peaceful morning walk. The weather was cool and the mountains looked beautiful."
-    },
-    {
-      id: 2,
-      title: "Exploring the Hills",
-      date: "2026-10-14",
-      location: "Ooty",
-      mood: "🤩 Excited",
-      description:
-        "Spent the day exploring the beautiful hills and trying some local food. It was one of the best moments of the trip."
-    }
-  ]);
+  const [entries, setEntries] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
 
   const [showForm, setShowForm] = useState(false);
 
@@ -32,6 +20,22 @@ function Journal() {
     mood: "😊 Happy",
     description: ""
   });
+
+  useEffect(() => {
+    const loadEntries = async () => {
+      try {
+        setError("");
+        setEntries(await getJournalEntries());
+      } catch (loadError) {
+        console.error("Failed to load journal entries:", loadError);
+        setError("Unable to load journal entries. Please start the backend.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadEntries();
+  }, []);
 
 
   /*
@@ -55,7 +59,7 @@ function Journal() {
    * the journal form is submitted.
    */
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
 
     event.preventDefault();
 
@@ -71,28 +75,22 @@ function Journal() {
     }
 
 
-    const newEntry = {
-      id: Date.now(),
-      ...journal
-    };
-
-
-    setEntries([
-      newEntry,
-      ...entries
-    ]);
-
-
-    setJournal({
-      title: "",
-      date: "",
-      location: "",
-      mood: "😊 Happy",
-      description: ""
-    });
-
-
-    setShowForm(false);
+    try {
+      const savedEntry = await createJournalEntry(journal);
+      setEntries((currentEntries) => [savedEntry, ...currentEntries]);
+      setJournal({
+        title: "",
+        date: "",
+        location: "",
+        mood: "😊 Happy",
+        description: ""
+      });
+      setShowForm(false);
+      setError("");
+    } catch (saveError) {
+      console.error("Failed to save journal entry:", saveError);
+      setError("Unable to save this entry. Please try again.");
+    }
   };
 
 
@@ -100,13 +98,16 @@ function Journal() {
    * Delete a journal entry.
    */
 
-  const deleteEntry = (entryId) => {
-
-    setEntries(
-      entries.filter(
-        (entry) => entry.id !== entryId
-      )
-    );
+  const deleteEntry = async (entryId) => {
+    try {
+      await deleteJournalEntry(entryId);
+      setEntries((currentEntries) =>
+        currentEntries.filter((entry) => entry.id !== entryId)
+      );
+    } catch (deleteError) {
+      console.error("Failed to delete journal entry:", deleteError);
+      setError("Unable to delete this entry. Please try again.");
+    }
   };
 
 
@@ -336,6 +337,10 @@ function Journal() {
       ========================================= */}
 
       <section className="journal-stats">
+
+        {isLoading && <p>Loading journal entries...</p>}
+
+        {error && <p className="form-error">{error}</p>}
 
         <div className="journal-stat-card">
 

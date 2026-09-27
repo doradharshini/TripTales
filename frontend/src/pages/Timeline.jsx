@@ -1,68 +1,34 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import {
+  deleteTimelineEvent,
+  getTimelineEvents,
+} from "../services/tripApi";
 
 
 function Timeline() {
 
-  const [events, setEvents] = useState([
-    {
-      id: 1,
-      date: "2026-10-12",
-      time: "10:00 AM",
-      type: "itinerary",
-      icon: "🗺️",
-      title: "Arrived in Ooty",
-      description:
-        "Started the Ooty adventure and checked into the hotel."
-    },
-
-    {
-      id: 2,
-      date: "2026-10-12",
-      time: "05:30 PM",
-      type: "memory",
-      icon: "📸",
-      title: "Beautiful Mountain View",
-      description:
-        "Captured the first beautiful view of the mountains."
-    },
-
-    {
-      id: 3,
-      date: "2026-10-13",
-      time: "08:30 AM",
-      type: "journal",
-      icon: "📝",
-      title: "A Peaceful Morning",
-      description:
-        "Woke up early and enjoyed the peaceful weather."
-    },
-
-    {
-      id: 4,
-      date: "2026-10-13",
-      time: "01:00 PM",
-      type: "expense",
-      icon: "💰",
-      title: "Lunch at Local Restaurant",
-      description:
-        "Tried some delicious local food.",
-      amount: 450
-    },
-
-    {
-      id: 5,
-      date: "2026-10-14",
-      time: "10:00 AM",
-      type: "itinerary",
-      icon: "🏔️",
-      title: "Explore the Hills",
-      description:
-        "Spent the day exploring the beautiful hills."
-    }
-  ]);
+  const [events, setEvents] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
 
 
   const [filter, setFilter] = useState("all");
+
+  useEffect(() => {
+    const loadEvents = async () => {
+      try {
+        setError("");
+        setEvents(await getTimelineEvents());
+      } catch (loadError) {
+        console.error("Failed to load timeline:", loadError);
+        setError("Unable to load the timeline. Please start the backend.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadEvents();
+  }, []);
 
 
   /*
@@ -104,14 +70,19 @@ function Timeline() {
    * Delete an event.
    */
 
-  const deleteEvent = (eventId) => {
-
-    setEvents(
-      events.filter(
-        (event) =>
-          event.id !== eventId
-      )
-    );
+  const deleteEvent = async (event) => {
+    try {
+      await deleteTimelineEvent(event.type, event.id);
+      setEvents((currentEvents) =>
+        currentEvents.filter(
+          (currentEvent) =>
+            !(currentEvent.id === event.id && currentEvent.type === event.type)
+        )
+      );
+    } catch (deleteError) {
+      console.error("Failed to delete timeline event:", deleteError);
+      setError("Unable to delete this timeline event.");
+    }
   };
 
 
@@ -173,6 +144,10 @@ function Timeline() {
       ========================================= */}
 
       <section className="timeline-controls">
+
+        {isLoading && <p>Loading timeline...</p>}
+
+        {error && <p className="form-error">{error}</p>}
 
         <button
           className={
@@ -350,9 +325,7 @@ function Timeline() {
                     <button
                       className="timeline-delete"
                       onClick={() =>
-                        deleteEvent(
-                          event.id
-                        )
+                        deleteEvent(event)
                       }
                     >
                       🗑️
