@@ -6,6 +6,7 @@ import {
   getItineraryItems,
   createItineraryItem,
 } from "../services/tripApi";
+import "./TripDetails.css";
 
 function TripDetails() {
   const { id } = useParams();
@@ -58,7 +59,7 @@ function TripDetails() {
       }
     };
 
-    loadTrip();
+    void loadTrip();
   }, [id]);
 
   useEffect(() => {
@@ -88,7 +89,7 @@ function TripDetails() {
       }
     };
 
-    loadItinerary();
+    void loadItinerary();
   }, [id]);
 
   const groupedItinerary = useMemo(() => {
@@ -341,6 +342,7 @@ function TripDetails() {
             }
           >
             <span>📋</span>
+            {" "}
             Overview
           </button>
 
@@ -355,6 +357,7 @@ function TripDetails() {
             }
           >
             <span>🗺️</span>
+            {" "}
             Itinerary
 
             {itinerary.length > 0 && (
@@ -363,16 +366,13 @@ function TripDetails() {
           </button>
 
           <button
-            className={
-              activeTab === "expenses"
-                ? "active"
-                : ""
-            }
-            onClick={() =>
-              setActiveTab("expenses")
-            }
+            type="button"
+            className="trip-tab-disabled"
+            disabled
+            title="Expenses are not available until an expense API is added"
           >
             <span>💰</span>
+            {" "}
             Expenses
           </button>
 
@@ -496,7 +496,7 @@ function TripDetails() {
               </div>
             )}
 
-            {isItineraryLoading ? (
+            {isItineraryLoading && (
               <div className="empty-itinerary">
                 <div>⏳</div>
 
@@ -508,7 +508,9 @@ function TripDetails() {
                   Getting your planned activities.
                 </p>
               </div>
-            ) : itinerary.length === 0 ? (
+            )}
+
+            {!isItineraryLoading && itinerary.length === 0 && (
               <div className="empty-itinerary">
 
                 <div className="empty-itinerary-icon">
@@ -532,7 +534,9 @@ function TripDetails() {
                 </button>
 
               </div>
-            ) : (
+            )}
+
+            {!isItineraryLoading && itinerary.length > 0 && (
               <div className="itinerary-list">
 
                 {Object.entries(
@@ -654,51 +658,6 @@ function TripDetails() {
         )}
 
 
-        {/* EXPENSES */}
-
-        {activeTab === "expenses" && (
-          <section className="trip-panel">
-
-            <div className="panel-heading itinerary-heading">
-
-              <div>
-                <span className="panel-label">
-                  TRACK YOUR SPENDING
-                </span>
-
-                <h2>Expenses</h2>
-
-                <p>
-                  Keep your travel budget organized.
-                </p>
-              </div>
-
-              <button className="primary-button">
-                + Add Expense
-              </button>
-
-            </div>
-
-            <div className="empty-itinerary">
-
-              <div className="empty-itinerary-icon">
-                💰
-              </div>
-
-              <h3>
-                No expenses yet
-              </h3>
-
-              <p>
-                Your travel expenses will
-                appear here.
-              </p>
-
-            </div>
-
-          </section>
-        )}
-
       </section>
 
 
@@ -707,14 +666,10 @@ function TripDetails() {
       {showActivityModal && (
         <div
           className="modal-backdrop"
-          onMouseDown={closeActivityModal}
         >
 
           <div
             className="activity-modal"
-            onMouseDown={(event) =>
-              event.stopPropagation()
-            }
           >
 
             <div className="modal-header">
@@ -749,9 +704,10 @@ function TripDetails() {
               <div className="activity-form-grid">
 
                 <div className="form-group">
-                  <label>Day *</label>
+                  <label htmlFor="activity-day">Day *</label>
 
                   <input
+                    id="activity-day"
                     type="number"
                     name="dayNumber"
                     min="1"
@@ -762,9 +718,10 @@ function TripDetails() {
                 </div>
 
                 <div className="form-group">
-                  <label>Activity *</label>
+                  <label htmlFor="activity-title">Activity *</label>
 
                   <input
+                    id="activity-title"
                     type="text"
                     name="title"
                     placeholder="Visit Ooty Lake"
@@ -775,9 +732,10 @@ function TripDetails() {
                 </div>
 
                 <div className="form-group">
-                  <label>Location</label>
+                  <label htmlFor="activity-location">Location</label>
 
                   <input
+                    id="activity-location"
                     type="text"
                     name="location"
                     placeholder="Ooty Lake"
@@ -787,9 +745,10 @@ function TripDetails() {
                 </div>
 
                 <div className="form-group">
-                  <label>Start time</label>
+                  <label htmlFor="activity-start">Start time</label>
 
                   <input
+                    id="activity-start"
                     type="time"
                     name="startTime"
                     value={activityForm.startTime}
@@ -798,9 +757,10 @@ function TripDetails() {
                 </div>
 
                 <div className="form-group">
-                  <label>End time</label>
+                  <label htmlFor="activity-end">End time</label>
 
                   <input
+                    id="activity-end"
                     type="time"
                     name="endTime"
                     value={activityForm.endTime}
@@ -809,9 +769,10 @@ function TripDetails() {
                 </div>
 
                 <div className="form-group full">
-                  <label>Description</label>
+                  <label htmlFor="activity-description">Description</label>
 
                   <textarea
+                    id="activity-description"
                     name="description"
                     rows="4"
                     placeholder="What do you want to do here?"

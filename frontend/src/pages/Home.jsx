@@ -1,325 +1,78 @@
 import { Link } from "react-router-dom";
-
+import "./Home.css";
 
 function Home() {
-
-  const destinations = [
-    {
-      name: "Goa",
-      description: "Beaches · Food · Adventure",
-      duration: "3 Days",
-      budget: "₹8,000",
-      rating: "4.8",
-      className: "goa",
-    },
-
-    {
-      name: "Ooty",
-      description: "Nature · Tea · Mountains",
-      duration: "3 Days",
-      budget: "₹6,500",
-      rating: "4.7",
-      className: "ooty",
-    },
-
-    {
-      name: "Varkala",
-      description: "Beach · Sunset · Cafés",
-      duration: "2 Days",
-      budget: "₹5,000",
-      rating: "4.9",
-      className: "varkala",
-    },
-
-    {
-      name: "Kerala",
-      description: "Backwaters · Nature · Culture",
-      duration: "4 Days",
-      budget: "₹10,000",
-      rating: "4.8",
-      className: "kerala",
-    },
-  ];
-
-
   return (
-
-    <main className="home">
-
-      <section className="hero">
-
-        <div className="hero-content">
-
-          <div className="hero-badge">
-            ✨ YOUR NEXT ADVENTURE STARTS HERE
+    <main className="home-page">
+      <section className="home-hero">
+        <div className="home-hero__copy">
+          <span className="home-hero__eyebrow">YOUR TRIPS. YOUR STORIES.</span>
+          <h1 className="home-hero__title">TripTales</h1>
+          <p className="home-hero__subtitle">Your trips. Your stories. All in one place.</p>
+          <div className="home-hero__features" aria-label="TripTales features">
+            <span><b>✈</b>Plan</span>
+            <span><b>⌖</b>Explore</span>
+            <span><b>▤</b>Journal</span>
+            <span><b>▣</b>Capture</span>
+            <span><b>⌁</b>Relive</span>
           </div>
-
-          <h1>
-            Where will your
-            <span> story </span>
-            take you?
-          </h1>
-
-          <p>
-            Plan unforgettable trips, discover beautiful places,
-            track your budget and keep every memory in one place.
-          </p>
-
-
-          <div className="search-box">
-
-            <span>🔍</span>
-
-            <input
-              type="text"
-              placeholder="Search a destination..."
-            />
-
-            <button>
-              Explore
-            </button>
-
+          <div className="home-hero__actions">
+            <Link className="home-hero__button" to="/create-trip">Start a New Journey <span>→</span></Link>
+            <Link className="home-hero__secondary" to="/trips">View My Trips</Link>
           </div>
-
-
-          <div className="popular">
-
-            <span>
-              Popular:
-            </span>
-
-            <button>Goa</button>
-            <button>Ooty</button>
-            <button>Kerala</button>
-            <button>Bali</button>
-
-          </div>
-
         </div>
-
-
-        <div className="hero-art">
-
-          <div className="floating-card card-one">
-
-            📍
-
-            <div>
-
-              <strong>
-                Ooty
-              </strong>
-
-              <small>
-                Nature escape
-              </small>
-
-            </div>
-
+        <div className="home-hero__art" aria-hidden="true">
+          <div className="home-hero__photo">
+            <img src="https://images.unsplash.com/photo-1530789253388-582c481c54b0?auto=format&fit=crop&w=700&q=85" alt="Mountain lake destination" />
           </div>
-
-
-          <div className="travel-circle">
-            🌴
-          </div>
-
-
-          <div className="floating-card card-two">
-
-            ⭐ 4.9
-
-            <small>
-              Trip rating
-            </small>
-
-          </div>
-
+          <p className="home-hero__note">Collect moments, not things ♡</p>
         </div>
-
       </section>
 
-
-      <section className="trending">
-
-        <div className="section-heading">
-
-          <div>
-
-            <span>
-              EXPLORE
-            </span>
-
-            <h2>
-              Trending Getaways
-            </h2>
-
-          </div>
-
-          <button className="view-all">
-            View all →
-          </button>
-
+      <section className="home-story-section">
+        <div className="home-section-heading">
+          <span>MAKE ROOM FOR THE GOOD DAYS</span>
+          <h2>Your travel story, in its own rhythm.</h2>
+          <p>TripTales keeps the planning, the little details and the memories together without turning your journey into a checklist.</p>
         </div>
-
-
-        <div className="trip-grid">
-
-          {destinations.map((destination) => (
-
-            <div
-              className={`trip-card ${destination.className}`}
-              key={destination.name}
-            >
-
-              <div className="trip-overlay">
-
-                <button className="heart">
-                  ♡
-                </button>
-
-                <div className="trip-info">
-
-                  <div className="rating">
-                    ⭐ {destination.rating}
-                  </div>
-
-                  <h3>
-                    {destination.name}
-                  </h3>
-
-                  <p>
-                    {destination.description}
-                  </p>
-
-                  <strong>
-                    {destination.duration}
-                    {" · "}
-                    {destination.budget}
-                  </strong>
-
-                </div>
-
-              </div>
-
-            </div>
-
-          ))}
-
+        <div className="home-story-grid">
+          <article className="home-story-card home-story-card--plan">
+            <div className="home-story-card__number">01</div>
+            <span className="home-story-card__icon">✦</span>
+            <h3>Plan lightly</h3>
+            <p>Shape a trip around the places and moments you actually want to remember.</p>
+            <Link to="/create-trip">Create a trip <span>→</span></Link>
+          </article>
+          <article className="home-story-card home-story-card--write">
+            <div className="home-story-card__number">02</div>
+            <span className="home-story-card__icon">✎</span>
+            <h3>Write honestly</h3>
+            <p>Save the details that never make it into a standard itinerary.</p>
+            <Link to="/journal">Open your journal <span>→</span></Link>
+          </article>
+          <article className="home-story-card home-story-card--keep">
+            <div className="home-story-card__number">03</div>
+            <span className="home-story-card__icon">◌</span>
+            <h3>Keep the feeling</h3>
+            <p>Collect photographs and moments in a private place that feels like yours.</p>
+            <Link to="/memorygram">View MemoryGram <span>→</span></Link>
+          </article>
         </div>
-
       </section>
 
-
-      <section className="features">
-
-        <div className="section-heading centered">
-
-          <span>
-            YOUR TRAVEL STORY
-          </span>
-
-          <h2>
-            Everything about your trip,
-            <br />
-            in one place.
-          </h2>
-
+      <section className="home-inspiration">
+        <div className="home-inspiration__image">
+          <img src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1200&q=85" alt="A quiet mountain landscape" />
         </div>
-
-
-        <div className="feature-grid">
-
-          <div className="feature-card">
-
-            <div className="feature-icon">
-              🗺️
-            </div>
-
-            <h3>
-              Plan
-            </h3>
-
-            <p>
-              Create itineraries, save places and
-              organize your entire journey.
-            </p>
-
-          </div>
-
-
-          <div className="feature-card">
-
-            <div className="feature-icon">
-              💰
-            </div>
-
-            <h3>
-              Track
-            </h3>
-
-            <p>
-              Keep your travel expenses organized
-              and know exactly where your money goes.
-            </p>
-
-          </div>
-
-
-          <div className="feature-card">
-
-            <div className="feature-icon">
-              📸
-            </div>
-
-            <h3>
-              Remember
-            </h3>
-
-            <p>
-              Turn your photos, places and experiences
-              into beautiful travel memories.
-            </p>
-
-          </div>
-
+        <div className="home-inspiration__copy">
+          <span>THE BEST PART IS LOOKING BACK</span>
+          <h2>From the first idea to the last photograph.</h2>
+          <p>See your journey take shape over time, one plan, note and memory at a time.</p>
+          <Link to="/timeline">Explore your timeline <span>→</span></Link>
         </div>
-
       </section>
-
-
-      <section className="create-trip">
-
-        <div>
-
-          <span>
-            ✈️ READY TO GO?
-          </span>
-
-          <h2>
-            Your next story is
-            <br />
-            waiting to be written.
-          </h2>
-
-          <p>
-            Start planning your next adventure with TripTales.
-          </p>
-
-        </div>
-
-
-        <Link
-          to="/create-trip"
-          className="create-trip-button"
-        >
-          + Create a Trip
-        </Link>
-
-      </section>
-
     </main>
   );
 }
-
 
 export default Home;

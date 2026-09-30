@@ -1,7 +1,7 @@
 import {
   BrowserRouter,
   Routes,
-  Route
+  Route,
 } from "react-router-dom";
 
 import Navbar from "./components/NavBar";
@@ -17,53 +17,60 @@ import Timeline from "./pages/Timeline";
 import "./App.css";
 
 
+function AppLayout() {
+  return (
+    <div className="app-shell">
+      <Navbar />
+      <div className="internal-content">
+        <Routes>
+
+          <Route
+            path="/"
+            element={<Home />}
+          />
+
+          <Route
+            path="/trips"
+            element={<MyTrips />}
+          />
+
+          <Route
+            path="/create-trip"
+            element={<CreateTrip />}
+          />
+
+          <Route
+            path="/trip/:id"
+            element={<TripDetails />}
+          />
+
+          <Route
+            path="/memorygram"
+            element={<MemoryGram />}
+          />
+
+          <Route
+            path="/journal"
+            element={<Journal />}
+          />
+
+          <Route
+            path="/timeline"
+            element={<Timeline />}
+          />
+
+        </Routes>
+      </div>
+    </div>
+  );
+}
+
 function App() {
 
   return (
 
     <BrowserRouter>
-
-      <Navbar />
-
-      <Routes>
-
-        <Route
-          path="/"
-          element={<Home />}
-        />
-
-        <Route
-          path="/trips"
-          element={<MyTrips />}
-        />
-
-        <Route
-          path="/create-trip"
-          element={<CreateTrip />}
-        />
-
-        <Route
-          path="/trip/:id"
-          element={<TripDetails />}
-        />
-
-        <Route
-          path="/memorygram"
-          element={<MemoryGram />}
-        />
-
-        <Route
-          path="/journal"
-          element={<Journal />}
-        />
-
-        <Route
-          path="/timeline"
-          element={<Timeline />}
-        />
-
-      </Routes>
-
+      <AppLayout />
     </BrowserRouter>
   );
 }

@@ -1,0 +1,33 @@
+.create-trip-page { min-height:100vh; padding:110px 7% 60px; background:var(--sand); }
+.create-trip-page__header { margin-bottom:24px; }
+.create-trip-page__eyebrow { color:var(--coral); font-size:11px; font-weight:700; letter-spacing:.16em; }
+.create-trip-page h1 { margin:8px 0; font-family:"Playfair Display",Georgia,serif; font-size:clamp(38px,5vw,56px); line-height:1; }
+.create-trip-page__header p { margin:0; color:var(--muted); }
+.create-trip-layout { display:grid; grid-template-columns:minmax(0,1.3fr) minmax(280px,.7fr); gap:18px; align-items:start; }
+.create-trip-form,.create-trip-preview { border:1px solid var(--line); border-radius:10px; background:var(--paper); box-shadow:0 8px 25px rgba(31,58,54,.05); }
+.create-trip-form { padding:25px; }
+.create-trip-form__steps { display:flex; gap:7px; margin-bottom:23px; }
+.create-trip-form__step { padding:7px 10px; border-radius:16px; background:#eee9e0; color:var(--muted); font-size:10px; font-weight:700; }
+.create-trip-form__step--active { background:var(--mint); color:var(--green-dark); }
+.create-trip-form__section { margin-bottom:20px; }
+.create-trip-form__section h2 { margin:0 0 6px; font-family:"Playfair Display",Georgia,serif; font-size:23px; }
+.create-trip-form__section p { margin:0; color:var(--muted); font-size:13px; }
+.create-trip-form__grid { display:grid; grid-template-columns:1fr 1fr; gap:15px; }
+.create-trip-form__field { display:grid; gap:6px; }
+.create-trip-form__field--full { grid-column:1/-1; }
+.create-trip-form__field label { color:var(--ink); font-size:12px; font-weight:700; }
+.create-trip-form__field input,.create-trip-form__field textarea { width:100%; padding:11px 12px; border:1px solid var(--line); border-radius:5px; background:white; color:var(--ink); }
+.create-trip-form__field textarea { resize:vertical; }
+.create-trip-form__error { color:#b44837; font-size:12px; }
+.create-trip-form__actions { display:flex; justify-content:end; gap:10px; margin-top:20px; }
+.create-trip-form__actions button { padding:11px 17px; border-radius:5px; font-weight:700; }
+.create-trip-form__cancel { border:1px solid var(--line); background:white; color:var(--ink); }
+.create-trip-form__submit { border:0; background:var(--green); color:white; }
+.create-trip-preview { overflow:hidden; position:sticky; top:94px; }
+.create-trip-preview__image { width:100%; height:220px; object-fit:cover; }
+.create-trip-preview__body { padding:20px; }
+.create-trip-preview__body h2 { margin:0 0 10px; font-family:"Playfair Display",Georgia,serif; }
+.create-trip-preview__body p { color:var(--muted); font-size:13px; line-height:1.6; }
+.create-trip-preview__note { margin-top:18px; padding:15px; background:#f4eee4; font-family:Kalam,cursive; font-size:18px; }
+@media (max-width:800px) { .create-trip-layout { grid-template-columns:1fr; } .create-trip-preview { position:static; } }
+@media (max-width:520px) { .create-trip-page { padding:95px 18px 40px; } .create-trip-form__grid { grid-template-columns:1fr; } .create-trip-form__field--full { grid-column:auto; } }

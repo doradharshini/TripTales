@@ -1,0 +1,73 @@
+.home-page { min-height: 100vh; background: var(--sand); }
+.home-hero { min-height: 610px; padding: 125px 8% 44px; display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 40px; position: relative; overflow: hidden; background: linear-gradient(90deg,rgba(255,244,221,.2),rgba(255,244,221,.06)),url("https://images.unsplash.com/photo-1500534623283-312aade485b7?auto=format&fit=crop&w=2200&q=88") center/cover; }
+.home-hero::after { content:""; position:absolute; inset:0; background: linear-gradient(180deg,rgba(255,249,235,.2),rgba(22,56,55,.2)); pointer-events:none; }
+.home-hero__copy, .home-hero__art { position: relative; z-index: 1; }
+.home-hero__copy { max-width: 570px; justify-self: center; text-align: center; }
+.home-hero__eyebrow, .dashboard-section__eyebrow { color: var(--coral); font-size: 11px; font-weight: 700; letter-spacing: .16em; }
+.home-hero__title { margin: 12px 0 15px; color: #123a4b; font-family: "Playfair Display", Georgia, serif; font-size: clamp(48px, 6vw, 76px); line-height: .98; letter-spacing: -.055em; }
+.home-hero__subtitle { margin: 0 auto 26px; font-family: Kalam, cursive; font-size: clamp(20px, 2.2vw, 28px); line-height: 1.2; }
+.home-hero__features { display: flex; justify-content: center; gap: 24px; margin: 0 auto 24px; }
+.home-hero__features span { display: grid; gap: 4px; color: var(--ink); font-size: 10px; font-weight: 700; }
+.home-hero__features b { font-size: 23px; font-weight: 400; }
+.home-hero__actions { display: flex; justify-content: center; gap: 10px; }
+.home-hero__button { padding: 13px 22px; border-radius: 28px; background: var(--green); color: white; font-size: 13px; font-weight: 700; }
+.home-hero__secondary { padding: 13px 18px; border: 1px solid var(--green); border-radius: 28px; background: rgba(255,255,255,.25); color: var(--green-dark); font-weight: 700; }
+.home-hero__art { min-height: 260px; display: flex; align-items: center; justify-content: center; }
+.home-hero__photo { width: 210px; height: 245px; padding: 9px; transform: rotate(4deg); background: white; box-shadow: 0 12px 28px rgba(25,44,39,.25); }
+.home-hero__photo img { width: 100%; height: 100%; object-fit: cover; }
+.home-hero__note { position: absolute; top: 30px; right: 2%; max-width: 130px; font-family: Kalam, cursive; font-size: 19px; line-height: 1.35; transform: rotate(-5deg); }
+.home-story-section { padding: 82px 8% 88px; background: var(--paper); }
+.home-section-heading { max-width: 620px; margin: 0 auto 38px; text-align: center; }
+.home-section-heading > span, .home-inspiration__copy > span { color: var(--coral); font-size: 11px; font-weight: 700; letter-spacing: .16em; }
+.home-section-heading h2 { margin: 10px 0; color: var(--ink); font-family: "Playfair Display", Georgia, serif; font-size: clamp(29px, 4vw, 43px); line-height: 1.08; }
+.home-section-heading p { margin: 0; color: var(--muted); line-height: 1.7; }
+.home-story-grid { max-width: 1040px; margin: auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.home-story-card { min-height: 270px; padding: 25px; position: relative; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.home-story-card::after { content: ""; position: absolute; width: 150px; height: 150px; right: -52px; bottom: -60px; border-radius: 50%; background: rgba(255,255,255,.28); }
+.home-story-card--plan { background: #e7efe9; }
+.home-story-card--write { background: #f5e9df; }
+.home-story-card--keep { background: #e7edf0; }
+.home-story-card__number { color: var(--muted); font-size: 11px; font-weight: 700; letter-spacing: .08em; }
+.home-story-card__icon { display: block; margin: 25px 0 12px; color: var(--green); font-size: 28px; }
+.home-story-card h3 { margin: 0 0 8px; font-family: "Playfair Display", Georgia, serif; font-size: 24px; }
+.home-story-card p { max-width: 235px; margin: 0 0 22px; color: #61706f; font-size: 13px; line-height: 1.6; }
+.home-story-card a, .home-inspiration__copy a { color: var(--green-dark); font-size: 12px; font-weight: 700; }
+.home-story-card a span, .home-inspiration__copy a span { margin-left: 5px; }
+.home-inspiration { max-width: 1200px; margin: 0 auto; padding: 82px 8%; display: grid; grid-template-columns: 1.1fr .9fr; gap: 58px; align-items: center; background: var(--sand); }
+.home-inspiration__image { height: 360px; overflow: hidden; border-radius: 12px; }
+.home-inspiration__image img { width: 100%; height: 100%; object-fit: cover; transition: transform .5s ease; }
+.home-inspiration__image:hover img { transform: scale(1.03); }
+.home-inspiration__copy h2 { margin: 12px 0; color: var(--ink); font-family: "Playfair Display", Georgia, serif; font-size: clamp(30px, 4vw, 45px); line-height: 1.08; }
+.home-inspiration__copy p { max-width: 390px; margin: 0 0 24px; color: var(--muted); line-height: 1.7; }
+.dashboard { max-width: 1400px; margin: -24px auto 0; padding: 0 24px 60px; position: relative; z-index: 2; }
+.dashboard__grid { display: grid; grid-template-columns: 1.15fr .85fr; gap: 18px; }
+.dashboard-panel { min-width: 0; padding: 22px; border: 1px solid var(--line); border-radius: 12px; background: rgba(255,253,249,.95); box-shadow: var(--shadow); }
+.dashboard-panel--wide { grid-column: 1 / -1; }
+.dashboard-panel__header { display: flex; align-items: flex-start; justify-content: space-between; gap: 15px; margin-bottom: 18px; }
+.dashboard-panel__title { margin: 4px 0 0; font-family: "Playfair Display", Georgia, serif; font-size: 25px; }
+.dashboard-panel__link { color: var(--green); font-size: 12px; font-weight: 700; }
+.dashboard-trip-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; }
+.dashboard-trip { overflow: hidden; border: 1px solid var(--line); border-radius: 7px; background: white; }
+.dashboard-trip__image { height: 118px; width: 100%; object-fit: cover; }
+.dashboard-trip__body { padding: 11px; }
+.dashboard-trip__body h3 { margin: 0 0 5px; font-size: 15px; }
+.dashboard-trip__body p { margin: 0; color: var(--muted); font-size: 11px; }
+.dashboard-trip__status { display: inline-block; margin-top: 9px; padding: 4px 8px; border-radius: 20px; background: var(--mint); color: var(--green-dark); font-size: 10px; font-weight: 700; }
+.dashboard-form { display: grid; gap: 10px; }
+.dashboard-form__row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.dashboard-form label { display: grid; gap: 5px; color: var(--muted); font-size: 10px; font-weight: 700; }
+.dashboard-form input { width: 100%; padding: 10px; border: 1px solid var(--line); border-radius: 6px; background: white; }
+.dashboard-form button { padding: 11px; border: 0; border-radius: 5px; background: var(--green); color: white; font-weight: 700; }
+.dashboard-list { display: grid; gap: 10px; }
+.dashboard-list__item { display: flex; align-items: center; gap: 10px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+.dashboard-list__thumb { width: 52px; height: 44px; flex: 0 0 auto; border-radius: 5px; object-fit: cover; }
+.dashboard-list__item strong { display: block; font-size: 12px; }
+.dashboard-list__item span { display: block; margin-top: 3px; color: var(--muted); font-size: 10px; }
+.dashboard-timeline { display: grid; gap: 9px; }
+.dashboard-timeline__item { display: grid; grid-template-columns: 70px 30px 1fr; align-items: center; gap: 10px; }
+.dashboard-timeline__date { color: var(--muted); font-size: 10px; text-align: right; }
+.dashboard-timeline__icon { width: 27px; height: 27px; display: grid; place-items: center; border-radius: 50%; background: var(--mint); font-size: 12px; }
+.dashboard-timeline__item strong { font-size: 12px; }
+.dashboard-timeline__item span { display: block; margin-top: 2px; color: var(--muted); font-size: 10px; }
+@media (max-width: 800px) { .home-hero { grid-template-columns: 1fr; min-height: 560px; } .home-hero__art { display: none; } .home-story-grid { grid-template-columns: 1fr; max-width: 500px; } .home-inspiration { grid-template-columns: 1fr; gap: 28px; } }
+@media (max-width: 520px) { .home-story-section, .home-inspiration { padding: 62px 20px; } .home-hero__features { gap: 11px; } .home-hero__actions { flex-direction: column; } .home-inspiration__image { height: 250px; } }
